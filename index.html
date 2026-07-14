@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DietPlanar — Eat Right. Live Light.</title>
+  <meta name="description" content="Personalized diet plans, balanced nutrition, and healthier habits — all in one place."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Barlow:wght@700;800;900&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<!-- ONBOARDING -->
+<div id="onboarding-overlay" class="modal-overlay" role="dialog" aria-modal="true">
+  <div class="modal-box ob-box">
+    <div class="ob-logo-row">
+      <span class="logo-icon">🥗</span>
+      <span class="ob-brand">Diet<strong>Planar</strong></span>
+    </div>
+    <h2 class="ob-title">Build Your Personal Plan</h2>
+    <p class="ob-sub">Answer a few quick questions to get your custom targets.</p>
+
+    <div id="step-1" class="ob-step active">
+      <div class="form-grid">
+        <div class="form-group"><label for="ob-name">Your Name</label><input type="text" id="ob-name" placeholder="e.g. Alex"/></div>
+        <div class="form-group"><label for="ob-gender">Biological Sex</label>
+          <select id="ob-gender"><option value="male">Male</option><option value="female">Female</option></select>
+        </div>
+        <div class="form-group"><label for="ob-age">Age (years)</label><input type="number" id="ob-age" placeholder="28" min="10" max="100"/></div>
+        <div class="form-group"><label for="ob-weight">Weight (kg)</label><input type="number" id="ob-weight" placeholder="70" step="0.1"/></div>
+        <div class="form-group"><label for="ob-height">Height (cm)</label><input type="number" id="ob-height" placeholder="175"/></div>
+        <div class="form-group"><label for="ob-activity">Activity Level</label>
+          <select id="ob-activity">
+            <option value="1.2">Sedentary (no exercise)</option>
+            <option value="1.375">Lightly Active (1–3×/week)</option>
+            <option value="1.55" selected>Moderately Active (3–5×/week)</option>
+            <option value="1.725">Very Active (6–7×/week)</option>
+            <option value="1.9">Extremely Active</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div id="step-2" class="ob-step">
+      <div class="goal-cards">
+        <button class="goal-card" data-goal="lose"><span class="gc-icon">🔥</span><div><span class="gc-name">Lose Weight</span><span class="gc-desc">500 kcal daily deficit</span></div></button>
+        <button class="goal-card" data-goal="maintain"><span class="gc-icon">⚖️</span><div><span class="gc-name">Maintain</span><span class="gc-desc">Stay at current weight</span></div></button>
+        <button class="goal-card" data-goal="gain"><span class="gc-icon">💪</span><div><span class="gc-name">Build Muscle</span><span class="gc-desc">300 kcal daily surplus</span></div></button>
+      </div>
+    </div>
+
+    <div id="step-3" class="ob-step">
+      <div class="diet-pills">
+        <button class="diet-pill selected" data-diet="balanced">🥗 Balanced</button>
+        <button class="diet-pill" data-diet="keto">🥑 Keto</button>
+        <button class="diet-pill" data-diet="vegetarian">🌿 Vegetarian</button>
+        <button class="diet-pill" data-diet="vegan">🌱 Vegan</button>
+        <button class="diet-pill" data-diet="highprotein">🍗 High Protein</button>
+      </div>
+    </div>
+
+    <div class="ob-nav">
+      <button id="ob-back-btn" class="btn-ghost" style="display:none;">← Back</button>
+      <div class="step-dots"><span class="dot active" data-s="1"></span><span class="dot" data-s="2"></span><span class="dot" data-s="3"></span></div>
+      <button id="ob-next-btn" class="btn-lime">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD MEAL MODAL -->
+<div id="add-meal-overlay" class="modal-overlay" role="dialog" aria-modal="true">
+  <div class="modal-box">
+    <div class="modal-hdr"><h2>Add to <span id="add-slot-label">Meal</span></h2><button class="modal-x" id="add-meal-close">✕</button></div>
+    <input type="text" id="meal-search" class="search-inp" placeholder="🔍 Search recipes…"/>
+    <div class="filter-row" id="meal-filter-row">
+      <button class="ftab active" data-f="all">All</button>
+      <button class="ftab" data-f="balanced">Balanced</button>
+      <button class="ftab" data-f="keto">Keto</button>
+      <button class="ftab" data-f="vegetarian">Vegetarian</button>
+      <button class="ftab" data-f="vegan">Vegan</button>
+      <button class="ftab" data-f="highprotein">High Protein</button>
+    </div>
+    <div id="meal-results" class="meal-results"></div>
+  </div>
+</div>
+
+<!-- RECIPE DETAIL MODAL -->
+<div id="recipe-detail-overlay" class="modal-overlay" role="dialog" aria-modal="true">
+  <div class="modal-box recipe-modal">
+    <div class="modal-hdr"><h2 id="recipe-detail-title">Recipe</h2><button class="modal-x" id="recipe-detail-close">✕</button></div>
+    <div id="recipe-detail-body"></div>
+  </div>
+</div>
+
+<!-- CREATE RECIPE MODAL -->
+<div id="create-recipe-overlay" class="modal-overlay" role="dialog" aria-modal="true">
+  <div class="modal-box">
+    <div class="modal-hdr"><h2>Create Custom Recipe</h2><button class="modal-x" id="cr-close">✕</button></div>
+    <div class="form-group"><label for="cr-name">Recipe Name</label><input type="text" id="cr-name" placeholder="My Power Salad"/></div>
+    <div class="form-grid">
+      <div class="form-group"><label for="cr-cal">Calories (kcal)</label><input type="number" id="cr-cal" placeholder="350"/></div>
+      <div class="form-group"><label for="cr-prot">Protein (g)</label><input type="number" id="cr-prot" placeholder="30"/></div>
+      <div class="form-group"><label for="cr-carb">Carbs (g)</label><input type="number" id="cr-carb" placeholder="40"/></div>
+      <div class="form-group"><label for="cr-fat">Fat (g)</label><input type="number" id="cr-fat" placeholder="12"/></div>
+    </div>
+    <div class="form-group"><label for="cr-diet">Diet Type</label>
+      <select id="cr-diet"><option value="balanced">Balanced</option><option value="keto">Keto</option><option value="vegetarian">Vegetarian</option><option value="vegan">Vegan</option><option value="highprotein">High Protein</option></select>
+    </div>
+    <div class="form-group"><label for="cr-ing">Ingredients (comma-separated)</label><textarea id="cr-ing" rows="3" placeholder="Chicken, Spinach, Olive oil…"></textarea></div>
+    <div class="form-group"><label for="cr-inst">Instructions</label><textarea id="cr-inst" rows="3" placeholder="Preparation steps…"></textarea></div>
+    <button id="cr-save" class="btn-lime" style="width:100%;margin-top:.75rem;">Save Recipe ✓</button>
+  </div>
+</div>
+
+<!-- LOG WEIGHT MODAL -->
+<div id="weight-overlay" class="modal-overlay" role="dialog" aria-modal="true">
+  <div class="modal-box" style="max-width:360px">
+    <div class="modal-hdr"><h2>Log Today's Weight</h2><button class="modal-x" id="weight-close">✕</button></div>
+    <div class="form-group"><label for="wt-input">Weight (kg)</label><input type="number" id="wt-input" step="0.1" placeholder="70.0"/></div>
+    <button id="wt-save" class="btn-lime" style="width:100%;margin-top:.85rem;">Log Weight</button>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app" class="app-hidden">
+
+  <!-- TOP NAV -->
+  <header class="topnav" id="topnav">
+    <div class="nav-left">
+      <button class="hamburger" id="hamburger" aria-label="menu">☰</button>
+      <a class="nav-brand" href="#" id="brand-home-link"><span class="brand-icon">🥗</span><span>Diet<strong>Planar</strong></span></a>
+    </div>
+    <nav class="nav-links" id="nav-links">
+      <button class="navlink active" data-page="home">Home</button>
+      <button class="navlink" data-page="plans">Plans</button>
+      <button class="navlink" data-page="mealplans">Meal Plans</button>
+      <button class="navlink" data-page="recipes">Recipes</button>
+      <button class="navlink" data-page="tracking">Tracking</button>
+      <button class="navlink" data-page="shopping">Shopping</button>
+      <button class="navlink" data-page="profile">Profile</button>
+    </nav>
+    <div class="nav-right">
+      <div class="nav-clock" id="nav-clock">00:00:00</div>
+      <div class="nav-date" id="nav-date"></div>
+      <button class="btn-cta" id="nav-cta-btn">Get Started Free →</button>
+      <button class="nav-avatar" id="nav-profile-btn" aria-label="Profile">👤</button>
+    </div>
+  </header>
+
+  <!-- ========== HOME ========== -->
+  <section id="page-home" class="page active">
+    <div class="hero">
+      <div class="hero-left">
+        <div class="hero-badge">#1 Diet &amp; Nutrition Planner</div>
+        <h1 class="hero-headline">EAT RIGHT.<br/><span class="lime">LIVE LIGHT.</span></h1>
+        <p class="hero-sub">Personalized diet plans, balanced nutrition,<br/>and healthier habits — all in one place.</p>
+        <div class="hero-ctas">
+          <button class="btn-lime hero-btn" id="hero-plan-btn">Get Your Plan →</button>
+          <button class="btn-outline-lime" id="hero-view-btn">▶ View Plans</button>
+        </div>
+        <div class="hero-social-proof">
+          <div class="avatar-stack">
+            <div class="avatar-circle" style="background:#e8a87c">A</div>
+            <div class="avatar-circle" style="background:#7eb8d4">B</div>
+            <div class="avatar-circle" style="background:#c488d8">C</div>
+            <div class="avatar-circle" style="background:#88d8a3">D</div>
+            <div class="avatar-circle" style="background:#d4a44a">E</div>
+          </div>
+          <div><strong class="lime">50K+</strong><span> Happy Users</span></div>
+        </div>
+      </div>
+
+      <div class="hero-center">
+        <div class="hero-img-wrap">
+          <img src="assets/hero_bowl.jpg" alt="High protein balanced meal bowl" class="hero-img"/>
+          <div class="hero-img-badge"><span class="lime">●</span> High Protein<br/><small>Balanced Meal</small></div>
+          <div class="hero-img-cal">
+            <span style="font-size:1.4rem">🔥</span>
+            <div><strong class="cal-num lime" id="hero-cal-num">0</strong><br/><small>Kcal Today</small></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-right">
+        <!-- Daily Progress -->
+        <div class="stat-card wide">
+          <div class="stat-card-left"><div class="stat-dot lime-dot"></div><span class="stat-label">Daily Progress</span></div>
+          <div class="stat-card-right">
+            <div class="progress-ring-wrap">
+              <svg class="prog-ring" viewBox="0 0 60 60">
+                <circle class="pr-bg" cx="30" cy="30" r="24"/>
+                <circle class="pr-fill" id="hero-ring" cx="30" cy="30" r="24"/>
+              </svg>
+              <span class="pr-pct" id="hero-ring-pct">0%</span>
+            </div>
+            <div>
+              <div class="stat-val-sm" id="hero-progress-msg">Let's go! 💪</div>
+              <div class="stat-sub" id="hero-progress-sub">Log your first meal</div>
+              <svg class="sparkline" viewBox="0 0 80 24"><polyline class="spark-line lime-spark" id="progress-spark" points="0,20 10,20 20,20 30,20 40,20 50,20 60,20 70,20 80,20"/></svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="stat-row-2">
+          <!-- Water -->
+          <div class="stat-card" id="water-hero-card">
+            <div class="stat-icon-row"><span class="stat-icon">💧</span><span class="stat-label">Water Intake</span></div>
+            <div class="stat-big"><span id="hero-water-num">0</span><span style="font-size:1rem;color:#555">/8</span></div>
+            <div class="stat-sub">Glasses Today</div>
+            <div class="water-dots" id="hero-water-dots"></div>
+          </div>
+          <!-- Active Time -->
+          <div class="stat-card">
+            <div class="stat-icon-row"><span class="stat-icon lime-icon">⏱</span><span class="stat-label">Active Time</span></div>
+            <div class="stat-big" id="hero-active-time">0m</div>
+            <div class="stat-sub" id="hero-active-sub">Today's session</div>
+            <svg class="sparkline" viewBox="0 0 80 24"><polyline class="spark-line lime-spark" points="0,20 15,18 25,14 35,16 50,10 65,12 80,6"/></svg>
+          </div>
+        </div>
+
+        <div class="stat-row-2">
+          <!-- Weight -->
+          <div class="stat-card" id="weight-hero-card" style="cursor:pointer" title="Click to log weight">
+            <div class="stat-icon-row"><span class="stat-icon">⚖️</span><span class="stat-label">Weight</span></div>
+            <div class="stat-big lime" id="hero-weight-val">--</div>
+            <div class="stat-sub">kg</div>
+            <div class="stat-trend" id="hero-weight-trend" style="font-size:.72rem;margin-top:.2rem;font-weight:600"></div>
+            <svg class="sparkline" viewBox="0 0 80 24"><polyline class="spark-line lime-spark" id="weight-spark" points="0,12 20,12 40,12 60,12 80,12"/></svg>
+          </div>
+          <!-- Streak -->
+          <div class="stat-card">
+            <div class="stat-icon-row"><span class="stat-icon">🔥</span><span class="stat-label">Streak</span></div>
+            <div class="stat-big lime" id="hero-streak">0</div>
+            <div class="stat-sub">Day<span id="streak-plural">s</span></div>
+            <div class="stat-sub" id="streak-msg">Start your streak!</div>
+          </div>
+        </div>
+
+        <div class="feat-icon-row">
+          <div class="feat-icon-item"><div class="feat-icon-circle">🥗</div><span>Diet<br/>Plans</span></div>
+          <div class="feat-icon-item"><div class="feat-icon-circle">📊</div><span>Nutrition<br/>Tracking</span></div>
+          <div class="feat-icon-item"><div class="feat-icon-circle">🍳</div><span>Healthy<br/>Recipes</span></div>
+          <div class="feat-icon-item"><div class="feat-icon-circle">👩‍⚕️</div><span>Expert<br/>Guidance</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FEATURES -->
+    <div class="features-section">
+      <div class="feat-why">
+        <h2>Why Choose<br/><span class="lime">DietPlanar?</span></h2>
+        <p>Achieve your health goals with smart plans and real results.</p>
+        <div class="why-underline"></div>
+      </div>
+      <div class="feat-cards">
+        <div class="feat-card"><div class="feat-card-icon">🍽️</div><h4>Custom Meal Plans</h4><p>Personalized plans based on your goals and preferences.</p></div>
+        <div class="feat-card"><div class="feat-card-icon">🔥</div><h4>Calorie Tracking</h4><p>Track calories and macronutrients with ease and accuracy.</p></div>
+        <div class="feat-card"><div class="feat-card-icon">📈</div><h4>Progress Insights</h4><p>Real-time streaks, weight trends and activity analytics.</p></div>
+        <div class="feat-card"><div class="feat-card-icon">📚</div><h4>Recipe Library</h4><p>Explore healthy, tasty, and easy-to-make recipes.</p></div>
+      </div>
+      <div class="feat-cta-banner">
+        <div class="feat-cta-text">
+          <h3>Start Your Healthy<br/>Journey Today!</h3>
+          <p>Get your personalized diet plan and transform your lifestyle.</p>
+          <button class="btn-lime" id="feat-cta-btn">Get Started Free →</button>
+        </div>
+        <img src="assets/cta_woman.jpg" alt="Fit woman with salad" class="feat-cta-img"/>
+      </div>
+    </div>
+
+    <div class="stats-bar">
+      <div class="stats-bar-item"><span class="stats-icon">🥗</span><div><strong class="lime">1000+</strong><div class="stats-lbl">Diet Plans</div></div></div>
+      <div class="stats-bar-item"><span class="stats-icon">🍳</span><div><strong class="lime">10K+</strong><div class="stats-lbl">Healthy Recipes</div></div></div>
+      <div class="stats-bar-item"><span class="stats-icon">👥</span><div><strong class="lime">50K+</strong><div class="stats-lbl">Active Users</div></div></div>
+      <div class="stats-bar-item"><span class="stats-icon">⭐</span><div><strong class="lime">98%</strong><div class="stats-lbl">Success Rate</div></div></div>
+    </div>
+  </section>
+
+  <!-- ========== PLANS ========== -->
+  <section id="page-plans" class="page">
+    <div class="inner-page">
+      <div class="inner-header"><h1>Our <span class="lime">Plans</span></h1></div>
+      <div class="plan-cards">
+        <div class="plan-card"><h3>Starter</h3><div class="plan-price"><span class="lime">Free</span></div>
+          <ul><li>✓ Basic meal tracking</li><li>✓ 10 recipes access</li><li>✓ Water tracker</li><li>✓ 7-day planner</li></ul>
+          <button class="btn-lime">Get Started Free →</button></div>
+        <div class="plan-card featured-plan"><div class="plan-badge-top">Most Popular</div>
+          <h3>Pro</h3><div class="plan-price"><span class="lime">₹499</span><small>/month</small></div>
+          <ul><li>✓ All Starter features</li><li>✓ Unlimited recipes</li><li>✓ Custom meal creator</li><li>✓ Progress analytics</li><li>✓ Shopping list export</li></ul>
+          <button class="btn-lime">Go Pro →</button></div>
+        <div class="plan-card"><h3>Expert</h3><div class="plan-price"><span class="lime">₹999</span><small>/month</small></div>
+          <ul><li>✓ All Pro features</li><li>✓ 1:1 nutrition coaching</li><li>✓ Blood panel analysis</li><li>✓ Custom supplement plan</li></ul>
+          <button class="btn-lime">Get Expert →</button></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== MEAL PLANNER ========== -->
+  <section id="page-mealplans" class="page">
+    <div class="inner-page">
+      <div class="inner-header">
+        <div><h1>Weekly Meal <span class="lime">Planner</span></h1><p class="sub">Your reusable weekly template. Add meals to any slot.</p></div>
+        <div style="display:flex;gap:.65rem;flex-wrap:wrap;">
+          <button class="btn-outline-lime sm" id="use-today-btn" title="Copy today's template to today's log">📋 Use Today's Plan</button>
+          <button class="btn-outline-lime sm" id="clear-week-btn">Clear Week</button>
+        </div>
+      </div>
+      <div class="day-tabs" id="day-tabs">
+        <button class="daytab active" data-day="Monday">Mon</button>
+        <button class="daytab" data-day="Tuesday">Tue</button>
+        <button class="daytab" data-day="Wednesday">Wed</button>
+        <button class="daytab" data-day="Thursday">Thu</button>
+        <button class="daytab" data-day="Friday">Fri</button>
+        <button class="daytab" data-day="Saturday">Sat</button>
+        <button class="daytab" data-day="Sunday">Sun</button>
+      </div>
+      <div class="planner-grid" id="planner-grid"></div>
+      <div class="week-summary-card">
+        <h3>📊 Weekly Template Overview</h3>
+        <div class="week-chips" id="week-chips"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== RECIPES ========== -->
+  <section id="page-recipes" class="page">
+    <div class="inner-page">
+      <div class="inner-header"><h1>Recipe <span class="lime">Library</span></h1><button class="btn-lime" id="create-recipe-btn">+ Create Recipe</button></div>
+      <input type="text" id="recipe-search" class="search-inp full" placeholder="🔍 Search by name or ingredient…"/>
+      <div class="filter-row" id="recipe-filter-row">
+        <button class="ftab active" data-f="all">All</button>
+        <button class="ftab" data-f="balanced">Balanced</button>
+        <button class="ftab" data-f="keto">Keto</button>
+        <button class="ftab" data-f="vegetarian">Vegetarian</button>
+        <button class="ftab" data-f="vegan">Vegan</button>
+        <button class="ftab" data-f="highprotein">High Protein</button>
+        <button class="ftab" data-f="custom">My Recipes</button>
+      </div>
+      <div class="recipe-grid" id="recipe-grid"></div>
+    </div>
+  </section>
+
+  <!-- ========== TRACKING ========== -->
+  <section id="page-tracking" class="page">
+    <div class="inner-page">
+      <div class="inner-header">
+        <div>
+          <h1>Nutrition <span class="lime">Tracking</span></h1>
+          <p class="sub" id="track-date-lbl"></p>
+        </div>
+        <div style="display:flex;gap:.65rem;flex-wrap:wrap;">
+          <button class="btn-outline-lime sm" id="log-weight-btn">⚖️ Log Weight</button>
+          <button class="btn-outline-lime sm" id="reset-today-btn">Reset Today</button>
+        </div>
+      </div>
+
+      <!-- Summary chips row -->
+      <div class="summary-chips" id="summary-chips"></div>
+
+      <div class="track-grid">
+        <div class="track-card main-track">
+          <div class="track-ring-wrap">
+            <svg class="track-ring" viewBox="0 0 180 180">
+              <defs>
+                <linearGradient id="trackGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#C5F135"/>
+                  <stop offset="100%" stop-color="#7BC50D"/>
+                </linearGradient>
+              </defs>
+              <circle class="tr-bg" cx="90" cy="90" r="72"/>
+              <circle class="tr-fill" id="track-ring-el" cx="90" cy="90" r="72"/>
+            </svg>
+            <div class="tr-center">
+              <div class="tr-num lime" id="tr-cal-num">0</div>
+              <div class="tr-lbl">kcal eaten</div>
+              <div class="tr-remain" id="tr-remain">-- left</div>
+            </div>
+          </div>
+          <div class="tr-meta">
+            <h3>Today's Calories</h3>
+            <div class="tr-row"><span>🎯 Target</span><strong id="tr-target" class="lime">--</strong></div>
+            <div class="tr-row"><span>🍽️ Eaten</span><strong id="tr-eaten">0 kcal</strong></div>
+            <div class="tr-row"><span>⚡ Remaining</span><strong id="tr-remaining-side" class="lime">--</strong></div>
+            <div class="tr-row"><span>🔥 Streak</span><strong class="lime" id="tr-streak">0 days</strong></div>
+            <div class="tr-row"><span>⏱ Active</span><strong id="tr-active">0m</strong></div>
+          </div>
+        </div>
+
+        <div class="track-card">
+          <h3 class="card-title">Macronutrients</h3>
+          <div class="macro-bar-item">
+            <div class="mb-hdr"><span>🥩 Protein</span><span id="p-val-lbl">0 / <span id="p-tgt">--</span>g</span></div>
+            <div class="bar-track"><div class="bar-fill prot-fill" id="p-bar"></div></div>
+          </div>
+          <div class="macro-bar-item">
+            <div class="mb-hdr"><span>🌾 Carbs</span><span>0 / <span id="c-tgt">--</span>g</span></div>
+            <div class="bar-track"><div class="bar-fill carb-fill" id="c-bar"></div></div>
+          </div>
+          <div class="macro-bar-item">
+            <div class="mb-hdr"><span>🥑 Fat</span><span>0 / <span id="f-tgt">--</span>g</span></div>
+            <div class="bar-track"><div class="bar-fill fat-fill" id="f-bar"></div></div>
+          </div>
+          <div class="macro-bar-item">
+            <div class="mb-hdr"><span>🌿 Fiber</span><span id="fi-val-lbl">0 / 30g</span></div>
+            <div class="bar-track"><div class="bar-fill fib-fill" id="fi-bar"></div></div>
+          </div>
+        </div>
+
+        <div class="track-card">
+          <h3 class="card-title">💧 Water Tracker</h3>
+          <p class="sub" style="margin-bottom:.85rem">Goal: 8 glasses · <span id="wt-ml-lbl">0ml</span></p>
+          <div class="water-grid" id="water-grid"></div>
+          <div class="water-stat"><span id="wt-count">0</span>/8 glasses</div>
+          <button class="btn-outline-lime sm" id="water-reset-btn" style="margin-top:.65rem;display:block">Reset</button>
+        </div>
+      </div>
+
+      <!-- Weight History -->
+      <div class="weight-history-section" id="weight-history-section">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+          <h2 class="sect-title" style="margin:0">⚖️ Weight History</h2>
+          <button class="btn-outline-lime sm" id="log-weight-btn2">+ Log Weight</button>
+        </div>
+        <div class="weight-chart-wrap">
+          <canvas id="weight-chart" height="80"></canvas>
+          <div class="weight-no-data" id="weight-no-data">No weight data yet. Click "+ Log Weight" to start tracking.</div>
+        </div>
+        <div class="weight-entries" id="weight-entries"></div>
+      </div>
+
+      <h2 class="sect-title">Today's Meals</h2>
+      <div class="meals-today-grid" id="meals-today-grid"></div>
+      <div class="tip-strip" id="tip-strip"><span class="lime">💡</span><span id="tip-text">Loading…</span></div>
+    </div>
+  </section>
+
+  <!-- ========== SHOPPING ========== -->
+  <section id="page-shopping" class="page">
+    <div class="inner-page">
+      <div class="inner-header">
+        <h1>Shopping <span class="lime">List</span></h1>
+        <div style="display:flex;gap:.75rem;"><button class="btn-outline-lime sm" id="print-btn">🖨 Print</button><button class="btn-outline-lime sm" id="copy-btn">📋 Copy</button></div>
+      </div>
+      <div id="shop-body"></div>
+      <div class="shop-empty" id="shop-empty"><div style="font-size:3rem;margin-bottom:.75rem">🛒</div><h3>No ingredients yet</h3><p>Add meals to your weekly planner to auto-generate your list.</p></div>
+    </div>
+  </section>
+
+  <!-- ========== PROFILE ========== -->
+  <section id="page-profile" class="page">
+    <div class="inner-page">
+      <h1>Your <span class="lime">Profile</span></h1>
+      <div class="profile-layout">
+        <div class="profile-col">
+          <div class="track-card profile-hero-card">
+            <div class="prof-avatar" id="prof-avatar">A</div>
+            <h2 id="prof-name">--</h2>
+            <p class="sub" id="prof-meta">--</p>
+          </div>
+          <div class="track-card stats-card">
+            <h3 class="card-title">Body Stats</h3>
+            <div class="s-row"><span>Weight</span><strong id="s-wt">--</strong></div>
+            <div class="s-row"><span>Height</span><strong id="s-ht">--</strong></div>
+            <div class="s-row"><span>BMI</span><strong id="s-bmi">--</strong></div>
+            <div class="s-row"><span>BMR</span><strong id="s-bmr">--</strong></div>
+            <div class="s-row"><span>TDEE</span><strong id="s-tdee" class="lime">--</strong></div>
+          </div>
+          <div class="track-card stats-card">
+            <h3 class="card-title">Daily Targets</h3>
+            <div class="s-row"><span>Calories</span><strong id="s-cal" class="lime">--</strong></div>
+            <div class="s-row"><span>Protein</span><strong id="s-prot" style="color:#C5F135">--</strong></div>
+            <div class="s-row"><span>Carbs</span><strong id="s-carb" style="color:#7dcef0">--</strong></div>
+            <div class="s-row"><span>Fat</span><strong id="s-fat" style="color:#f0b27d">--</strong></div>
+          </div>
+          <div class="track-card stats-card">
+            <h3 class="card-title">Activity Stats</h3>
+            <div class="s-row"><span>🔥 Streak</span><strong id="s-streak" class="lime">--</strong></div>
+            <div class="s-row"><span>📅 Logged Days</span><strong id="s-logged-days">--</strong></div>
+            <div class="s-row"><span>💧 Avg Water</span><strong id="s-avg-water">--</strong></div>
+            <div class="s-row"><span>⏱ Today Active</span><strong id="s-active">--</strong></div>
+          </div>
+        </div>
+        <div class="track-card profile-form-card">
+          <h3 class="card-title">Edit Profile</h3>
+          <div class="form-grid">
+            <div class="form-group"><label for="p-name">Name</label><input type="text" id="p-name"/></div>
+            <div class="form-group"><label for="p-gender">Sex</label><select id="p-gender"><option value="male">Male</option><option value="female">Female</option></select></div>
+            <div class="form-group"><label for="p-age">Age</label><input type="number" id="p-age"/></div>
+            <div class="form-group"><label for="p-wt">Weight (kg)</label><input type="number" id="p-wt" step="0.1"/></div>
+            <div class="form-group"><label for="p-ht">Height (cm)</label><input type="number" id="p-ht"/></div>
+            <div class="form-group"><label for="p-act">Activity</label>
+              <select id="p-act"><option value="1.2">Sedentary</option><option value="1.375">Lightly Active</option><option value="1.55">Moderately Active</option><option value="1.725">Very Active</option><option value="1.9">Extremely Active</option></select>
+            </div>
+          </div>
+          <div class="form-group" style="margin-top:.75rem"><label>Goal</label>
+            <div class="diet-pills" id="goal-pills">
+              <button class="diet-pill" data-goal="lose">🔥 Lose Weight</button>
+              <button class="diet-pill" data-goal="maintain">⚖️ Maintain</button>
+              <button class="diet-pill" data-goal="gain">💪 Build Muscle</button>
+            </div>
+          </div>
+          <div class="form-group"><label>Diet Preference</label>
+            <div class="diet-pills" id="diet-pills-prof">
+              <button class="diet-pill" data-diet="balanced">🥗 Balanced</button>
+              <button class="diet-pill" data-diet="keto">🥑 Keto</button>
+              <button class="diet-pill" data-diet="vegetarian">🌿 Vegetarian</button>
+              <button class="diet-pill" data-diet="vegan">🌱 Vegan</button>
+              <button class="diet-pill" data-diet="highprotein">🍗 High Protein</button>
+            </div>
+          </div>
+          <button class="btn-lime" id="save-profile-btn" style="width:100%;margin-top:1rem">Save Changes ✓</button>
+          <button class="btn-danger" id="reset-app-btn" style="width:100%;margin-top:.5rem">Reset App &amp; Clear Data</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-brand"><span class="brand-icon">🥗</span><div><div class="footer-brand-name">Diet<strong>Planar</strong></div><div class="footer-tagline">Eat Right. Live Light.</div></div></div>
+      <div class="footer-links"><a href="#">Privacy Policy</a><a href="#">Terms of Service</a><a href="#">Refund Policy</a><a href="#">Contact Us</a></div>
+      <div class="footer-social"><span>Follow Us</span><a href="#" class="soc-icon">📸</a><a href="#" class="soc-icon">👍</a><a href="#" class="soc-icon">🐦</a><a href="#" class="soc-icon">▶️</a></div>
+      <div class="footer-copy">© 2025 DietPlanar. All Rights Reserved.</div>
+    </div>
+  </footer>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="app.js"></script>
+</body>
+</html>
